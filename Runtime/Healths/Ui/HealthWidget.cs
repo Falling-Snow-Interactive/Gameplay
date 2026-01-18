@@ -86,7 +86,8 @@ namespace Fsi.Gameplay.Healths.Ui
         
         #region Visual Controls
 		
-        public void Refresh()
+        // ReSharper disable Unity.PerformanceAnalysis
+        private void Refresh()
         {
             slider?.SetValueWithoutNotify(health.Normalized);
 
