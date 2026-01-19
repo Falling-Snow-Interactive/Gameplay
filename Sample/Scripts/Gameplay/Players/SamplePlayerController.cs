@@ -2,7 +2,6 @@ using Fsi.Gameplay.Healths;
 using Fsi.Gameplay.Physics;
 using Fsi.Gameplay.Visuals;
 using Fsi.StateMachines;
-using Fsi.Ui.Headers;
 using UnityEngine;
 
 namespace Fsi.Gameplay.Sample.Gameplay.Players
@@ -18,7 +17,7 @@ namespace Fsi.Gameplay.Sample.Gameplay.Players
 	    [Header("Physics")]
 	    
 	    [SerializeField]
-	    private new Rigidbody rigidbody;
+	    private Rigidbody rigidbody;
 	    public Rigidbody Rigidbody => rigidbody;
 
 	    [SerializeField]
