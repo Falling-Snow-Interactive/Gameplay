@@ -28,7 +28,11 @@ namespace Fsi.Gameplay.Randomizers
 		public int GetWeight(List<TEntry> entries)
 		{
 			int weight = 0;
-			foreach (TEntry entry in entries) weight += entry.Weight;
+			foreach (TEntry entry in entries)
+			{
+				weight += entry.Weight;
+			}
+
 			return weight;
 		}
 		
@@ -38,8 +42,9 @@ namespace Fsi.Gameplay.Randomizers
 			if (entries.Count == 0 || totalWeight == 0)
 			{
 				Debug.LogWarning("There is nothing to randomize.");
-				return default(TValue);
+				return default;
 			}
+			
 			int roll = Random.Range(0, totalWeight);
 			int weight = 0;
 			foreach (TEntry entry in entries)
@@ -56,7 +61,7 @@ namespace Fsi.Gameplay.Randomizers
 		{
 			if (Entries.Count == 0 || TotalWeight == 0)
 			{
-				return default(TValue);
+				return default;
 			}
 			return Randomize(Entries, TotalWeight);
 		}
@@ -65,34 +70,43 @@ namespace Fsi.Gameplay.Randomizers
 		{
 			if (Entries.Count == 0 || TotalWeight == 0　|| amount == 0)
 			{
-				return new();
+				return new List<TValue>();
 			}
 			
 			if (repeats)
 			{
-				List<TValue> entries = new();
-				for (int i = 0; i < amount; i++) entries.Add(Randomize());
-				return entries;
-			}
-			else
-			{
-				List<TValue> entries = new();
+				List<TValue> e = new();
 				for (int i = 0; i < amount; i++)
 				{
-					var adjusted = new List<TEntry>();
-					foreach (TEntry e in Entries)
-						if (!entries.Contains(e.Value))
-							adjusted.Add(e);
-
-					if (adjusted.Count == 0) return entries;
-
-					int weight = GetWeight(adjusted);
-					TValue selected = Randomize(adjusted, weight);
-					entries.Add(selected);
+					e.Add(Randomize());
 				}
 
-				return entries;
+				return e;
 			}
+
+			List<TValue> randomize = new();
+			for (int i = 0; i < amount; i++)
+			{
+				List<TEntry> adjusted = new();
+				foreach (TEntry e in Entries)
+				{
+					if (!randomize.Contains(e.Value))
+					{
+						adjusted.Add(e);
+					}
+				}
+
+				if (adjusted.Count == 0)
+				{
+					return randomize;
+				}
+
+				int weight = GetWeight(adjusted);
+				TValue selected = Randomize(adjusted, weight);
+				randomize.Add(selected);
+			}
+
+			return randomize;
 		}
 	}
 }

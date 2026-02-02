@@ -21,12 +21,7 @@ namespace Fsi.Gameplay.Healths
                         {
                             style =
                             {
-                                // alignSelf = Align.Center,
-                                // alignContent = Align.Center,
-                                // unityTextAlign = TextAnchor.MiddleCenter,
-                                
                                 paddingLeft = 10,
-                                // paddingRight = 10,
                             }
                         };
             

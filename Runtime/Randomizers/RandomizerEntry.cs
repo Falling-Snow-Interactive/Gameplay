@@ -1,4 +1,5 @@
 using System;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace Fsi.Gameplay.Randomizers
@@ -6,7 +7,7 @@ namespace Fsi.Gameplay.Randomizers
 	[Serializable]
 	public class RandomizerEntry<T> : ISerializationCallbackReceiver
 	{
-		[HideInInspector]
+		[HideInInspector, UsedImplicitly]
 		[SerializeField]
 		private string name = "";
 		
