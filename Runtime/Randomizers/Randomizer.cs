@@ -1,34 +1,48 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor.PackageManager;
 using UnityEngine;
-using Random = UnityEngine.Random;
+using Random = System.Random;
 
 namespace Fsi.Gameplay.Randomizers
 {
 	[Serializable]
-	public class Randomizer<TValue, TEntry>
-		where TEntry : RandomizerEntry<TValue>
+	public class Randomizer<TValue>
+		// where TEntry : RandomizerEntry<TValue>
 	{
-		[SerializeField]
-		private List<TEntry> entries = new();
-		public List<TEntry> Entries => entries; 
+		private Random _random;
+		private Random Random => _random ??= new Random();
 
+		[SerializeField]
+		private List<RandomizerEntry<TValue>> entries = new();
+		public List<RandomizerEntry<TValue>> Entries => entries; 
+		
 		public int TotalWeight => GetWeight(Entries);
 
-		public void Add(TEntry value)
+		[Header("Debugging")]
+
+		[SerializeField]
+		private bool showLogs;
+		public bool ShowLogs
+		{
+			get => showLogs;
+			set => showLogs = value;
+		}
+
+		public void Add(RandomizerEntry<TValue> value)
 		{
 			Entries.Add(value);
 		}
 
-		public void Remove(TEntry value)
+		public void Remove(RandomizerEntry<TValue> value)
 		{
 			Entries.Remove(value);
 		}
 
-		public int GetWeight(List<TEntry> entries)
+		public int GetWeight(List<RandomizerEntry<TValue>> entries)
 		{
 			int weight = 0;
-			foreach (TEntry entry in entries)
+			foreach (RandomizerEntry<TValue> entry in entries)
 			{
 				weight += entry.Weight;
 			}
@@ -37,7 +51,7 @@ namespace Fsi.Gameplay.Randomizers
 		}
 		
 		// ReSharper disable Unity.PerformanceAnalysis
-		public TValue Randomize(List<TEntry> entries, int totalWeight)
+		public TValue Randomize(List<RandomizerEntry<TValue>> entries, int totalWeight, Random random)
 		{
 			if (entries.Count == 0 || totalWeight == 0)
 			{
@@ -45,9 +59,9 @@ namespace Fsi.Gameplay.Randomizers
 				return default;
 			}
 			
-			int roll = Random.Range(0, totalWeight);
+			int roll = random.Next(0, totalWeight);
 			int weight = 0;
-			foreach (TEntry entry in entries)
+			foreach (RandomizerEntry<TValue> entry in entries)
 			{
 				weight += entry.Weight;
 				if (roll < weight) return entry.Value;
@@ -63,7 +77,13 @@ namespace Fsi.Gameplay.Randomizers
 			{
 				return default;
 			}
-			return Randomize(Entries, TotalWeight);
+
+			return Randomize(Entries, TotalWeight, Random);
+		}
+
+		public TValue Randomize(Random random)
+		{
+			return Randomize(Entries, TotalWeight, random);
 		}
 
 		public List<TValue> Randomize(int amount, bool repeats)
@@ -87,8 +107,8 @@ namespace Fsi.Gameplay.Randomizers
 			List<TValue> randomize = new();
 			for (int i = 0; i < amount; i++)
 			{
-				List<TEntry> adjusted = new();
-				foreach (TEntry e in Entries)
+				List<RandomizerEntry<TValue>> adjusted = new();
+				foreach (RandomizerEntry<TValue> e in Entries)
 				{
 					if (!randomize.Contains(e.Value))
 					{
@@ -102,11 +122,38 @@ namespace Fsi.Gameplay.Randomizers
 				}
 
 				int weight = GetWeight(adjusted);
-				TValue selected = Randomize(adjusted, weight);
+				TValue selected = Randomize(adjusted, weight, Random);
 				randomize.Add(selected);
 			}
 
 			return randomize;
+		}
+
+		public void Log(string message, LogLevel level)
+		{
+			switch (level)
+			{
+				case LogLevel.Error:
+					Debug.LogError($"Randomizer | {message}");
+					break;
+				case LogLevel.Warn:
+					Debug.LogWarning($"Randomizer | {message}");
+					break;
+				case LogLevel.Info:
+					Debug.Log($"Randomizer | {message}");
+					break;
+				case LogLevel.Verbose:
+					Debug.Log($"Randomizer | {message}");
+					break;
+				case LogLevel.Debug:
+					Debug.Log($"Randomizer | {message}");
+					break;
+				case LogLevel.Silly:
+					Debug.Log($"Randomizer | {message}");
+					break;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(level), level, null);
+			}
 		}
 	}
 }
