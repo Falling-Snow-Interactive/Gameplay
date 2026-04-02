@@ -8,7 +8,6 @@ namespace Fsi.Gameplay.Randomizers
 {
 	[Serializable]
 	public class Randomizer<TValue>
-		// where TEntry : RandomizerEntry<TValue>
 	{
 		private Random _random;
 		private Random Random => _random ??= new Random();

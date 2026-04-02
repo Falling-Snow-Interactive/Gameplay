@@ -19,6 +19,7 @@ namespace Fsi.Gameplay.Randomizers
 			set => this.value = value;
 		}
 		
+		[Min(0)]
 		[SerializeField]
 		private int weight = 1;
 		public int Weight
@@ -27,7 +28,7 @@ namespace Fsi.Gameplay.Randomizers
 			set => weight = value;
 		}
 
-		public override string ToString() => $"{value} ({weight})";
+		public override string ToString() => $"{value} - {weight}";
 		
 		public void OnBeforeSerialize()
 		{

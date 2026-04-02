@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 
 namespace Fsi.Gameplay.Randomizer
 {
-    [CustomPropertyDrawer(typeof(Randomizer<,>))]
+    [CustomPropertyDrawer(typeof(Randomizer<>))]
     public class RandomizerDrawer : PropertyDrawer
     {
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
