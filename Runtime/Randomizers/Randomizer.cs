@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.PackageManager;
 using UnityEngine;
 using Random = System.Random;
@@ -16,7 +17,7 @@ namespace Fsi.Gameplay.Randomizers
 		private List<RandomizerEntry<TValue>> entries = new();
 		public List<RandomizerEntry<TValue>> Entries => entries; 
 		
-		public int TotalWeight => GetWeight(Entries);
+		public int TotalWeight => Entries.Sum(e => e.Weight);
 
 		[Header("Debugging")]
 
@@ -27,109 +28,84 @@ namespace Fsi.Gameplay.Randomizers
 			get => showLogs;
 			set => showLogs = value;
 		}
-
-		public void Add(RandomizerEntry<TValue> value)
-		{
-			Entries.Add(value);
-		}
-
-		public void Remove(RandomizerEntry<TValue> value)
-		{
-			Entries.Remove(value);
-		}
-
-		public int GetWeight(List<RandomizerEntry<TValue>> entries)
-		{
-			int weight = 0;
-			foreach (RandomizerEntry<TValue> entry in entries)
-			{
-				weight += entry.Weight;
-			}
-
-			return weight;
-		}
 		
-		// ReSharper disable Unity.PerformanceAnalysis
-		public TValue Randomize(List<RandomizerEntry<TValue>> entries, int totalWeight, Random random)
-		{
-			if (entries.Count == 0 || totalWeight == 0)
-			{
-				Debug.LogWarning("There is nothing to randomize.");
-				return default;
-			}
-			
-			int roll = random.Next(0, totalWeight);
-			int weight = 0;
-			foreach (RandomizerEntry<TValue> entry in entries)
-			{
-				weight += entry.Weight;
-				if (roll < weight) return entry.Value;
-			}
-
-			Debug.LogError($"Randomizer {typeof(TValue).Name} is out of range. Roll: {roll} - Total: {TotalWeight}.");
-			return default;
-		}
-
-		public TValue Randomize()
+		public TValue Randomize(Random random = null, HashSet<TValue> exclude = default)
 		{
 			if (Entries.Count == 0 || TotalWeight == 0)
 			{
 				return default;
 			}
 
-			return Randomize(Entries, TotalWeight, Random);
-		}
-
-		public TValue Randomize(Random random)
-		{
-			return Randomize(Entries, TotalWeight, random);
-		}
-
-		public List<TValue> Randomize(int amount, bool repeats)
-		{
-			if (Entries.Count == 0 || TotalWeight == 0　|| amount == 0)
+			if (random != null)
 			{
-				return new List<TValue>();
+				_random = random;
 			}
 			
-			if (repeats)
+			List<RandomizerEntry<TValue>> testEntries;
+			int testWeight;
+			
+			if (exclude == default)
 			{
-				List<TValue> e = new();
-				for (int i = 0; i < amount; i++)
-				{
-					e.Add(Randomize());
-				}
+				testEntries = Entries;
+				testWeight = TotalWeight;
+			}
+			else
+			{
+				testEntries = Entries
+				              .Where(e => !exclude.Contains(e.Value))
+				              .ToList();
+				testWeight = testEntries.Sum(e => e.Weight);
 
-				return e;
+			}
+			
+			if (testEntries.Count == 0 || testWeight == 0)
+			{
+				Log("No entries to randomize.", LogLevel.Warn);
+				return default;
+			}
+			
+			int roll = Random.Next(0, testWeight);
+			
+			int test = 0;
+			foreach (RandomizerEntry<TValue> entry in entries)
+			{
+				test += entry.Weight;
+				if (roll < test)
+				{
+					return entry.Value;
+				}
 			}
 
-			List<TValue> randomize = new();
+			Debug.LogError($"Randomizer {typeof(TValue).Name} is out of range. Roll: {roll} - Total: {TotalWeight}.");
+			return default;
+		}
+
+		public List<TValue> Randomize(int amount, bool repeats, Random random = null)
+		{
+			List<TValue> values = new();
+			HashSet<TValue> exclude = new();
+			
 			for (int i = 0; i < amount; i++)
 			{
-				List<RandomizerEntry<TValue>> adjusted = new();
-				foreach (RandomizerEntry<TValue> e in Entries)
-				{
-					if (!randomize.Contains(e.Value))
-					{
-						adjusted.Add(e);
-					}
-				}
+				TValue selected = Randomize(random, exclude);
+				values.Add(selected);
 
-				if (adjusted.Count == 0)
+				if (!repeats)
 				{
-					return randomize;
+					exclude.Add(selected);
 				}
-
-				int weight = GetWeight(adjusted);
-				TValue selected = Randomize(adjusted, weight, Random);
-				randomize.Add(selected);
 			}
 
-			return randomize;
+			return values;
 		}
 
 		public void Log(string message, LogLevel level)
 		{
+			if (!ShowLogs)
+			{
+				return;
+			}
+			
 			switch (level)
 			{
 				case LogLevel.Error:
