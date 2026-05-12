@@ -76,7 +76,7 @@ namespace Fsi.Gameplay.Randomizers
 				}
 			}
 
-			Debug.LogError($"Randomizer {typeof(TValue).Name} is out of range. Roll: {roll} - Total: {TotalWeight}.");
+			Log($"Randomizer {typeof(TValue).Name} is out of range. Roll: {roll} - Total: {TotalWeight}.", LogLevel.Error);
 			return default;
 		}
 
@@ -99,6 +99,7 @@ namespace Fsi.Gameplay.Randomizers
 			return values;
 		}
 
+		// ReSharper disable Unity.PerformanceAnalysis
 		public void Log(string message, LogLevel level)
 		{
 			if (!ShowLogs)

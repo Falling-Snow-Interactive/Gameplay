@@ -77,6 +77,12 @@ namespace Fsi.Gameplay.Healths
 			max = health;
 		}
 
+		public Health(int current, int max)
+		{
+			this.current = current;
+			this.max = max;
+		}
+
 		/// <summary>
 		/// Sets both current and maximum health to the given value.
 		/// </summary>

@@ -16,15 +16,13 @@ namespace Fsi.Gameplay.Visuals
 		private Animator animator;
 		public Animator Animator => animator;
 
-		[SerializeField]
-		private NavMeshAgent agent;
-
 		// Bones
 		[Header("Bones")]
 		[SerializeField]
 		private List<BoneReference> boneReferences = new();
 
 		[Header("Parameters")]
+		
 		[SerializeField]
 		private string moveXParam = "MoveX";
 
@@ -50,6 +48,11 @@ namespace Fsi.Gameplay.Visuals
 		
 		[SerializeField]
 		protected List<Renderer> renderers;
+
+		[Header("References")]
+		
+		[SerializeField]
+		private NavMeshAgent agent;
 		
 		public Dictionary<string, Transform> Bones { get; private set; }
 		public List<Renderer> Renderer => renderers;
@@ -62,18 +65,17 @@ namespace Fsi.Gameplay.Visuals
 
 		private void Update()
 		{
-			// if (rigidbody)
-			// {
-			// 	SetMovement(rigidbody.linearVelocity, false);
-			// }
-
-			if (agent)
+			if (GetComponent<Rigidbody>())
+			{
+				SetMovement(GetComponent<Rigidbody>().linearVelocity, false);
+			} 
+			else if (agent)
 			{
 				SetMovement(agent.velocity, false);
 			}
 		}
 
-		public void SetMovement(Vector3 velocity, bool normalize)
+		public void SetMovement(Vector3 velocity, bool normalize = false)
 		{
 			Vector3 inverse = transform.InverseTransformDirection(velocity.normalized) *
 			                  (velocity.magnitude / movementSpeed);
